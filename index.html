@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Page App</title>
+    <style>
+        .page { display: none; }
+        .page.active { display: block; }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="?page=home">Home</a>
+        <a href="?page=home&subpage=subpage1">Home > Subpage 1</a>
+        <a href="?page=home&subpage=subpage2">Home > Subpage 2</a>
+        <a href="?page=about">About</a>
+    </nav>
+
+    <div id="content">
+        <div id="home" class="page">
+            <h1>Home Page</h1>
+            <p>Welcome to the home page!</p>
+            <div id="subpage1" class="subpage">
+                <h2>Subpage 1</h2>
+                <p>Details of Subpage 1 under Home.</p>
+            </div>
+            <div id="subpage2" class="subpage">
+                <h2>Subpage 2</h2>
+                <p>Details of Subpage 2 under Home.</p>
+            </div>
+        </div>
+
+        <div id="about" class="page">
+            <h1>About Page</h1>
+            <p>About us content here.</p>
+        </div>
+    </div>
+
+    <script>
+        const googleAppScriptUrl = 'https://script.google.com/macros/s/AKfycbxXX9uwEO9P314OUImHj7y4d1_fe6t4CXgRpH59cN-5LtV391w_1arEld506DmGoLe1/exec';
+
+        function showPage(page, subpage) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(p => p.classList.remove('active'));
+
+            const subpages = document.querySelectorAll('.subpage');
+            subpages.forEach(sp => sp.style.display = 'none');
+
+            const activePage = document.getElementById(page);
+            if (activePage) {
+                activePage.classList.add('active');
+                if (subpage) {
+                    const activeSubpage = document.getElementById(subpage);
+                    if (activeSubpage) {
+                        activeSubpage.style.display = 'block';
+                    }
+                }
+            }
+        }
+
+        function fetchContent(page, subpage) {
+            fetch(`${googleAppScriptUrl}?page=${page}&subpage=${subpage}`)
+                .then(response => response.json())
+                .then(data => {
+                    showPage(data.page, data.subpage);
+                });
+        }
+
+        function parseURLParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                page: params.get('page') || 'home',
+                subpage: params.get('subpage') || ''
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const { page, subpage } = parseURLParams();
+            fetchContent(page, subpage);
+
+            window.addEventListener('popstate', () => {
+                const { page, subpage } = parseURLParams();
+                fetchContent(page, subpage);
+            });
+        });
+    </script>
+</body>
+</html>
